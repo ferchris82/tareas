@@ -50,6 +50,8 @@ public class IndexControlador implements Initializable{
     @FXML
     private TextField estatusTexto;
 
+    private Integer idTareaInterno;
+
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
         tareaTabla.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -79,6 +81,7 @@ public class IndexControlador implements Initializable{
         }else{
             var tarea = new Tarea();
             recolectarDatosFormulario(tarea);
+            tarea.setIdTarea(null);
             tareaServicio.guardarTarea(tarea);
             mostrarMensaje("Información", "Tarea agregada");
             limpiarFormulario();
@@ -86,15 +89,59 @@ public class IndexControlador implements Initializable{
         }
     }
 
+    public void cargarTareaFormulario(){
+        var tarea = tareaTabla.getSelectionModel().getSelectedItem();
+        if(tarea != null){
+            idTareaInterno = tarea.getIdTarea();
+            nombreTareaTexto.setText(tarea.getNombreTarea());
+            responsableTexto.setText(tarea.getResponsable());
+            estatusTexto.setText(tarea.getEstatus());
+        }
+    }
+
     private void recolectarDatosFormulario(Tarea tarea){
+        if(idTareaInterno != null)
+            tarea.setIdTarea(idTareaInterno);
         tarea.setNombreTarea(nombreTareaTexto.getText());
         tarea.setResponsable(responsableTexto.getText());
         tarea.setEstatus(estatusTexto.getText());
     }
 
-    private void limpiarFormulario(){
+    public void modificarTarea(){
+        if(idTareaInterno == null){
+            mostrarMensaje("Información", "Debe seleccionar una tarea");
+            return;
+        }
+        if(nombreTareaTexto.getText().isEmpty()){
+            mostrarMensaje("Error Validación", "Debe proporcionar una tarea");
+            nombreTareaTexto.requestFocus();
+        }
+        var tarea = new Tarea();
+        recolectarDatosFormulario(tarea);
+        tareaServicio.guardarTarea(tarea);
+        mostrarMensaje("Información", "Tarea modificada");
+        limpiarFormulario();
+        listarTareas();
+    }
+
+    public void eliminarTarea(){
+        var tarea = tareaTabla.getSelectionModel().getSelectedItem();
+        if(tarea != null){
+            logger.info("Registro a eliminar: " + tarea.toString());
+            tareaServicio.eliminarTarea(tarea);
+            mostrarMensaje("Información", "Tarea eliminada: " + tarea.getIdTarea());
+            limpiarFormulario();
+            listarTareas();
+        } else {
+            mostrarMensaje("Error", "No se ha seleccionado ninguna tarea.");
+        }
+    }
+
+    public void limpiarFormulario(){
+        idTareaInterno = null;
         nombreTareaTexto.clear();
         responsableTexto.clear();
+        estatusTexto.clear();
     }
 
     private void mostrarMensaje(String titulo, String mensaje){
