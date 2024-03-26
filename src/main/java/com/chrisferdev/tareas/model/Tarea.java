@@ -21,4 +21,5 @@ public class Tarea {
     private String nombreTarea;
     private String responsable;
     private String estatus;
+
 }
